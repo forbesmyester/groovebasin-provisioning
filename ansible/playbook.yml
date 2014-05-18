@@ -1,0 +1,60 @@
+- hosts: all
+  vars:
+
+    # Repositories
+    project__repository__method: git_http
+    project__repository__url: 'https://github.com/andrewrk/groovebasin.git'
+    project__repository__dest: '~/groovebasin'
+    project__webserver__user: vagrant
+
+  tasks:
+    - name: "Libgroove Deps"
+      apt: pkg={{ item }} state=present
+      with_items:
+        - gcc
+        - cpp
+        - git
+        - g++
+        - automake1.9
+        - autoconf
+        - libtool
+        - flex
+        - bison
+        - python-software-properties
+        - libchromaprint-dev
+        - cmake
+        - yasm
+        - libmp3lame-dev
+        - libmp3lame0
+        - libbz2-dev
+        - libspeexdsp-dev
+        - libsdl1.2-dev
+      sudo: yes
+      
+    - name: "Libgroove Remove Build Dir"
+      file: dest=/tmp/libgroove_build state=absent
+      sudo: yes
+      
+    - name: 'Bulid LibGroove (Checkout)'
+      git: repo="https://github.com/andrewrk/libgroove.git" dest=/tmp/libgroove_build force=yes
+      
+    - name: 'Bulid LibGroove (Build)'
+      shell: cd /tmp/libgroove_build && mkdir build && cd build && cmake ../ && make && sudo make install && sudo ldconfig
+    
+    - include: tasks/nodejs_install.yml
+    - include: tasks/{{ project__repository__method }}_checkout_code.yml
+    
+    - name: 'Node: NPM: Install'
+      shell: cd {{ project__repository__dest }} ; npm install
+    
+    - name: 'Find real path to project root'
+      shell: cd {{ project__repository__dest }} ; echo $PWD
+      register: project__repository__full_path_dest
+      
+    - name: 'Service: Setup'
+      template: src=templates/nodeservice dest=/etc/init.d/nodeservice mode=777
+      sudo: true
+    
+    - name: "Service: Start"
+      service: name=nodeservice state=restarted
+      sudo: true

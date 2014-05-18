@@ -1,0 +1,52 @@
+#! /bin/bash
+# /etc/init.d/nodeservice
+#
+
+# Some things that run always
+touch /var/lock/blah
+
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+    echo "Starting script nodeservice"
+    PATH=$PATH:/usr/local/bin
+    NODE_ENV=production
+    NODE_PATH=/usr/local/bin/node
+    NPM_PATH=/usr/local/bin/npm
+    APPLICATION_USER={{ project__webserver__user }}
+    APPLICATION_DIRECTORY={{ project__repository__full_path_dest.stdout }}
+    cd ${APPLICATION_DIRECTORY} ; sudo -u ${APPLICATION_USER} NODE_ENV=${NODE_ENV} ${NPM_PATH} install
+    cd ${APPLICATION_DIRECTORY} ; sudo -u ${APPLICATION_USER} NODE_ENV=${NODE_ENV} ${NPM_PATH} run build
+    cd ${APPLICATION_DIRECTORY} ; sudo -b -u ${APPLICATION_USER} NODE_PATH=${NODE_PATH} NODE_ENV=${NODE_ENV} ${NPM_PATH} start
+    ;;
+  stop)
+    echo "Stopping script blah"
+    echo "Could do more here"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/blah {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+
+description 'Node Service'
+author 'forbesmyester'
+
+start on (local-filesystems and net-device-up)
+stop on shutdown
+
+respawn
+respawn limit 5 60
+
+env NODE_ENV=development
+env NODE_PATH=/usr/local/bin/node
+env APPLICATION_USER={{ project__webserver__user }}
+env APPLICATION_DIRECTORY={{ project__repository__full_path_dest.stdout }}
+env NODE_SCRIPT="./launch-production"
+
+script
+  cd ${APPLICATION_DIRECTORY}
+  exec sudo -u ${APPLICATION_USER} NODE_ENV=${NODE_ENV} NODE_PATH=${NODE_PATH} ${NODE_SCRIPT} 2>&1
+end script

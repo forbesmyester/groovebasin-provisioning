@@ -1,0 +1,6 @@
+- name: "GIT: Install"
+  apt: state=present pkg=git
+  sudo: true
+
+- name: 'Deploy Code'
+  git: repo={{ project__repository__url }} dest={{ project__repository__dest }} force=yes

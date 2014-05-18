@@ -1,0 +1,6 @@
+local-inventory.ini
+ec2.py
+ec2.ini
+.vagrant
+ansible/roles/webserver/files/https-cert.pem
+ansible/roles/webserver/files/https-key.pem

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# No Prompting...
+echo 'libc6 libraries/restart-without-asking boolean true' | debconf-set-selections
+echo 'libc6:amd64 libraries/restart-without-asking boolean true' | debconf-set-selections
+echo 'libpam0g:amd64 libraries/restart-without-asking boolean true' | debconf-set-selections
+
+apt-get update
+apt-get -y install python-pip python-dev
+pip install ansible
+mkdir -p /etc/ansible
+echo '[vagrant]' > /etc/ansible/hosts
+echo '127.0.0.1' >> /etc/ansible/hosts
+su vagrant -c "ansible-playbook -c local /vagrant/ansible/playbook.yml"

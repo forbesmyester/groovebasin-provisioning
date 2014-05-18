@@ -1,0 +1,25 @@
+- name: 'Node.js: Install Dependencies'
+  apt: state=present pkg={{ item }}
+  with_items:
+    - gcc
+    - cpp
+    - g++
+    - automake1.9
+    - autoconf
+    - libtool
+    - flex
+    - bison
+    - python-software-properties
+  sudo: true
+
+- include: tgz_configure_make_install.yml url=http://nodejs.org/dist/node-latest.tar.gz
+
+- name: 'Node.js: Install NPM: Download'
+  get_url: url=https://npmjs.org/install.sh dest=/tmp/npm_install.sh validate_certs=no
+
+- name: 'Node.js: Install NPM: Install'
+  shell: clean=yes sh /tmp/npm_install.sh
+  sudo: true
+
+- name: 'Node.js: Install NPM: Remove Install Script'
+  file: path=/tmp/npm_install.sh state=absent
