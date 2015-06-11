@@ -6,6 +6,7 @@ echo 'libc6:amd64 libraries/restart-without-asking boolean true' | debconf-set-s
 echo 'libpam0g:amd64 libraries/restart-without-asking boolean true' | debconf-set-selections
 
 apt-get update
+apt-get upgrade
 apt-get -y install python-pip python-dev
 pip install ansible
 mkdir -p /etc/ansible
